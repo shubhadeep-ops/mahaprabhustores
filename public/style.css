@@ -87,3 +87,49 @@ header a {
   color: #5d4037;
   font-size: 15px;
 }
+/* ===== Colorful Search & Cart ===== */
+.bar {
+  margin: 20px;
+  padding: 12px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #fce4ec, #e3f2fd);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+.bar input {
+  border: 2px solid #ff9800;
+  border-radius: 25px;
+  padding: 12px 18px;
+  outline: none;
+}
+
+.bar button {
+  border: none;
+  border-radius: 25px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #ff4081, #ff9800);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* ===== Beautiful Product Cards ===== */
+.grid article {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+  transition: transform 0.3s ease;
+}
+
+.grid article:hover {
+  transform: translateY(-5px);
+}
+
+.grid article button {
+  background: linear-gradient(135deg, #7b1fa2, #e91e63);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 16px;
+  font-weight: bold;
+}
