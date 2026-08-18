@@ -716,3 +716,64 @@ button:disabled{
     display:none;
   }
 }
+.optionBox{
+  background:#f8fbf8;
+  border:1px solid #dce7dd;
+  border-radius:14px;
+  padding:15px;
+  margin:15px 0;
+}
+
+.optionBox h3{
+  margin:0 0 5px;
+  color:#176b38;
+}
+
+.optionBox .hint{
+  font-size:13px;
+  color:#718073;
+  margin:5px 0 12px;
+}
+
+.optionRow{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  margin:8px 0;
+}
+
+.optionRow input{
+  padding:10px;
+  border:1px solid #ccd8cd;
+  border-radius:8px;
+  outline:none;
+}
+
+.optionRow .weightName{
+  flex:1;
+}
+
+.optionRow .weightPrice{
+  width:120px;
+}
+
+.optionRow button{
+  padding:8px 12px;
+}
+
+@media(max-width:700px){
+
+  .optionRow{
+    flex-wrap:wrap;
+  }
+
+  .optionRow .weightName{
+    width:100%;
+  }
+
+  .optionRow .weightPrice{
+    flex:1;
+    width:auto;
+  }
+
+}
