@@ -1,15 +1,6 @@
 const express=require("express"), path=require("path"), fs=require("fs"), crypto=require("crypto");
-const admin=require("firebase-admin");
 
-const app=express(), PORT=process.env.PORT||3000, dataDir=path.join(__dirname,"data");
-
-const serviceAccount=JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-
-admin.initializeApp({
-  credential:admin.credential.cert(serviceAccount)
-});
-
-const messaging=admin.messaging();
+const app=express(), PORT=process.env.PORT||3000, dataDir=path.join(__dirname,"data
 
 const ADMIN_USERNAME=process.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD=process.env.ADMIN_PASSWORD;
