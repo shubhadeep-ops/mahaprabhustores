@@ -1,16 +1,13 @@
 const express=require("express"), path=require("path"), fs=require("fs"), crypto=require("crypto");
-
-const app=express(), PORT=process.env.PORT||3000, dataDir=path.join(__dirname,"data
+const app=express(), PORT=process.env.PORT||3000, dataDir=path.join(__dirname,"data");
 
 const ADMIN_USERNAME=process.env.ADMIN_USERNAME;
 const ADMIN_PASSWORD=process.env.ADMIN_PASSWORD;
 const SESSION_SECRET=process.env.SESSION_SECRET;
-
 if(!ADMIN_USERNAME || !ADMIN_PASSWORD || !SESSION_SECRET){
   console.error("Missing ADMIN_USERNAME, ADMIN_PASSWORD, or SESSION_SECRET environment variables.");
   process.exit(1);
 }
-
 fs.mkdirSync(dataDir,{recursive:true});
 const productsFile=path.join(dataDir,"products.json"), ordersFile=path.join(dataDir,"orders.json");
 const seed=[
@@ -31,7 +28,6 @@ const write=(f,d)=>fs.writeFileSync(f,JSON.stringify(d,null,2));
 app.set("trust proxy",1);
 app.use(express.json());
 app.use(express.urlencoded({extended:false}));
-
 const sessions=new Map();
 function parseCookies(req){
   const out={};
