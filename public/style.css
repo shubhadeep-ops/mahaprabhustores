@@ -20,3 +20,24 @@ nav a{margin-left:12px}.adminBox{background:white;padding:20px;border-radius:15p
     transform: translateY(0);
   }
 }
+/* Product animation */
+.grid article {
+  animation: fadeUp 0.6s ease forwards;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.grid article:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(25px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
