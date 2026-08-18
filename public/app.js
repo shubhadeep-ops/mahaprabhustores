@@ -1,28 +1,3 @@
-let products=[],cart=JSON.parse(localStorage.ms_cart||"[]");
-async function load(){products=await (await fetch("/api/products")).json();render();save()} 
-function render(){
-  let q=(document.getElementById("q").value||"").toLowerCase();
-
-  document.getElementById("products").innerHTML=
-    products
-    .filter(p=>p.name.toLowerCase().includes(q))
-    .map(p=>`
-      <article>
-        <div class="pic">
-          ${p.image
-            ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;border-radius:12px">`
-            : "🛍️"
-          }
-        </div>
-
-        <small>${p.cat} · ${p.unit}</small>
-
-        <h3>${p.name}</h3>
-
-        <span class="old">
-          ${p.mrp>p.price?"₹"+p.mrp:""}
-        </span>
-
         <b>₹${p.price}</b>
 
         <div>
@@ -42,3 +17,4 @@ function removeItem(id){let x=cart.find(a=>a.id===id);if(!x)return;if(--x.qty<=0
 function cartClose(){document.getElementById("modal").style.display="none"}
 async function checkout(){if(!cart.length)return alert("Cart খালি");let name=prompt("Customer Name?"),mobile=prompt("Mobile Number?"),address=prompt("Delivery Address?");if(!name||!mobile||!address)return;let total=cart.reduce((s,x)=>s+products.find(p=>p.id===x.id).price*x.qty,0);let o=await(await fetch("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,mobile,address,total:total+(total>=500?0:30),items:cart})})).json();alert("Order #"+o.no+" placed");cart=[];save();cartClose()}
 load();
+
