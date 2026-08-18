@@ -1,1 +1,110 @@
-<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mahaprabhu Stores</title><link rel="stylesheet" href="/style.css"></head><body><header><b>🛒 Mahaprabhu Stores</b><nav><a href="/orders.html">📦 My Orders</a></nav></header><main><section class="hero"><img src="/ChatGPT%20Image%20Aug%2018%2C%202026%2C%2008_38_32%20PM.png" alt="Mahaprabhu Stores Banner" class="hero-banner"></section><div class="bar"><input id="q" placeholder="পণ্য খুঁজুন..." oninput="render()"><button onclick="cartOpen()">🛒 Cart <span id="count">0</span></button></div><div id="products" class="grid"></div></main><div id="modal" class="modal"><div class="box"><button onclick="cartClose()">×</button><h2>Cart</h2><div id="cart"></div><div id="total"></div><button onclick="checkout()">Order Now</button></div></div><script src="/app.js"></script></body></html>
+<!doctype html>
+<html lang="bn">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>Mahaprabhu Stores</title>
+
+  <link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+<header>
+  <b>🛒 Mahaprabhu Stores</b>
+
+  <nav>
+    <a href="/orders.html">📦 My Orders</a>
+  </nav>
+</header>
+
+
+<main>
+
+  <!-- HERO -->
+
+  <section class="hero">
+
+    <img
+      src="/ChatGPT%20Image%20Aug%2018%2C%202026%2C%2008_38_32%20PM.png"
+      alt="Mahaprabhu Stores Banner"
+      class="hero-banner"
+    >
+
+  </section>
+
+
+  <!-- SEARCH -->
+
+  <div class="bar">
+
+    <input
+      id="q"
+      placeholder="পণ্য খুঁজুন..."
+      oninput="render()"
+    >
+
+    <button onclick="cartOpen()">
+      🛒 Cart
+      <span id="count">0</span>
+    </button>
+
+  </div>
+
+
+  <!-- PRODUCTS -->
+
+  <div id="products" class="grid"></div>
+
+</main>
+
+
+<!-- =========================
+     CART MODAL
+========================= -->
+
+<div id="modal" class="modal">
+
+  <div class="box">
+
+    <button onclick="cartClose()">×</button>
+
+    <h2>🛒 Cart</h2>
+
+    <div id="cart"></div>
+
+    <div id="total"></div>
+
+    <button onclick="checkout()">
+      Order Now
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- =========================
+     PRODUCT DETAILS MODAL
+========================= -->
+
+<div id="productModal" class="modal">
+
+  <div class="box productDetails">
+
+    <button onclick="productClose()">×</button>
+
+    <div id="productDetailsContent"></div>
+
+  </div>
+
+</div>
+
+
+<script src="/app.js"></script>
+
+</body>
+
+</html>
