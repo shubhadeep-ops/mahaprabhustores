@@ -132,3 +132,21 @@ async function status(no,status){
 function bill(no){
   location.href="/bill.html?no="+encodeURIComponent(no);
 }
+async function enableNotifications(){
+
+  if(!("Notification" in window)){
+    return alert("এই browser notification support করে না।");
+  }
+
+  const permission = await Notification.requestPermission();
+
+  if(permission !== "granted"){
+    return alert("Notification permission Allow করতে হবে।");
+  }
+
+  alert("🔔 Notification permission দেওয়া হয়েছে।");
+
+  new Notification("Mahaprabhu Stores",{
+    body:"Order notification এখন এই ফোনে চালু হয়েছে।"
+  });
+}
