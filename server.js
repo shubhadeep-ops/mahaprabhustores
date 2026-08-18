@@ -1,5 +1,15 @@
-const express=require("express"), path=require("path"), fs=require("fs");
-const app=express(), PORT=3000, dataDir=path.join(__dirname,"data");
+const express=require("express"), path=require("path"), fs=require("fs"), crypto=require("crypto");
+const app=express(), PORT=process.env.PORT||3000, dataDir=path.join(__dirname,"data");
+
+const ADMIN_USERNAME=process.env.ADMIN_USERNAME;
+const ADMIN_PASSWORD=process.env.ADMIN_PASSWORD;
+const SESSION_SECRET=process.env.SESSION_SECRET;
+
+if(!ADMIN_USERNAME || !ADMIN_PASSWORD || !SESSION_SECRET){
+  console.error("Missing ADMIN_USERNAME, ADMIN_PASSWORD, or SESSION_SECRET environment variables.");
+  process.exit(1);
+}
+
 fs.mkdirSync(dataDir,{recursive:true});
 const productsFile=path.join(dataDir,"products.json"), ordersFile=path.join(dataDir,"orders.json");
 const seed=[
@@ -14,13 +24,69 @@ const seed=[
 ];
 if(!fs.existsSync(productsFile))fs.writeFileSync(productsFile,JSON.stringify(seed,null,2));
 if(!fs.existsSync(ordersFile))fs.writeFileSync(ordersFile,"[]");
-const read=f=>JSON.parse(fs.readFileSync(f)); const write=(f,d)=>fs.writeFileSync(f,JSON.stringify(d,null,2));
-app.use(express.json()); app.use(express.static(path.join(__dirname,"public")));
+const read=f=>JSON.parse(fs.readFileSync(f));
+const write=(f,d)=>fs.writeFileSync(f,JSON.stringify(d,null,2));
+
+app.set("trust proxy",1);
+app.use(express.json());
+app.use(express.urlencoded({extended:false}));
+
+const sessions=new Map();
+function parseCookies(req){
+  const out={};
+  (req.headers.cookie||"").split(";").forEach(part=>{const i=part.indexOf("=");if(i>0)out[part.slice(0,i).trim()]=decodeURIComponent(part.slice(i+1).trim())});
+  return out;
+}
+function getSession(req){
+  const token=parseCookies(req).admin_session;
+  if(!token)return null;
+  const item=sessions.get(token);
+  if(!item || item.expires<Date.now()){sessions.delete(token);return null;}
+  return {token,...item};
+}
+function setSession(res){
+  const token=crypto.randomBytes(32).toString("hex");
+  const expires=Date.now()+1000*60*60*8;
+  sessions.set(token,{expires});
+  res.cookie("admin_session",token,{httpOnly:true,sameSite:"lax",secure:process.env.NODE_ENV==="production",maxAge:1000*60*60*8});
+}
+const requireAdmin=(req,res,next)=>{
+  if(getSession(req))return next();
+  if(req.path.startsWith("/api/"))return res.status(401).json({error:"Admin login required"});
+  return res.redirect("/admin-login");
+};
+
+// Public login/logout endpoints.
+app.get("/admin-login",(req,res)=>{
+  if(getSession(req))return res.redirect("/manage-7f3k9");
+  res.sendFile(path.join(__dirname,"public","login.html"));
+});
+app.post("/admin-login",(req,res)=>{
+  const {username,password}=req.body;
+  if(username===ADMIN_USERNAME && password===ADMIN_PASSWORD){
+    setSession(res);
+    return res.redirect("/manage-7f3k9");
+  }
+  return res.redirect("/admin-login?error=1");
+});
+app.post("/admin-logout",requireAdmin,(req,res)=>{
+  const current=getSession(req); if(current)sessions.delete(current.token); res.clearCookie("admin_session"); res.redirect("/admin-login");
+});
+
+// Protect old/direct admin files too, while the actual admin URL stays separate.
+app.get(["/admin.html","/admin.js","/manage-7f3k9"],requireAdmin,(req,res)=>{
+  if(req.path==="/admin.js")return res.sendFile(path.join(__dirname,"public","admin.js"));
+  return res.sendFile(path.join(__dirname,"public","admin.html"));
+});
+
 app.get("/api/products",(req,res)=>res.json(read(productsFile)));
-app.post("/api/products",(req,res)=>{let a=read(productsFile);let id=a.length?Math.max(...a.map(x=>x.id))+1:1;let p={id,...req.body};a.push(p);write(productsFile,a);res.json(p)});
-app.delete("/api/products/:id",(req,res)=>{let a=read(productsFile).filter(x=>x.id!=req.params.id);write(productsFile,a);res.sendStatus(204)});
-app.put("/api/products/:id",(req,res)=>{let a=read(productsFile),i=a.findIndex(x=>x.id==req.params.id);if(i<0)return res.sendStatus(404);a[i]={...a[i],...req.body,id:a[i].id};write(productsFile,a);res.json(a[i])});
-app.get("/api/orders",(req,res)=>res.json(read(ordersFile)));
+app.post("/api/products",requireAdmin,(req,res)=>{let a=read(productsFile);let id=a.length?Math.max(...a.map(x=>x.id))+1:1;let p={id,...req.body};a.push(p);write(productsFile,a);res.json(p)});
+app.delete("/api/products/:id",requireAdmin,(req,res)=>{let a=read(productsFile).filter(x=>x.id!=req.params.id);write(productsFile,a);res.sendStatus(204)});
+app.put("/api/products/:id",requireAdmin,(req,res)=>{let a=read(productsFile),i=a.findIndex(x=>x.id==req.params.id);if(i<0)return res.sendStatus(404);a[i]={...a[i],...req.body,id:a[i].id};write(productsFile,a);res.json(a[i])});
+
+app.get("/api/orders",requireAdmin,(req,res)=>res.json(read(ordersFile)));
 app.post("/api/orders",(req,res)=>{let a=read(ordersFile),o={...req.body,no:"MS"+Date.now().toString().slice(-6),date:new Date().toLocaleString("en-IN"),status:"Order Placed"};a.unshift(o);write(ordersFile,a);res.json(o)});
-app.put("/api/orders/:no",(req,res)=>{let a=read(ordersFile),o=a.find(x=>x.no===req.params.no);if(!o)return res.sendStatus(404);o.status=req.body.status;write(ordersFile,a);res.json(o)});
-app.listen(PORT,()=>console.log(`Mahaprabhu Stores running at http://localhost:${PORT}`));
+app.put("/api/orders/:no",requireAdmin,(req,res)=>{let a=read(ordersFile),o=a.find(x=>x.no===req.params.no);if(!o)return res.sendStatus(404);o.status=req.body.status;write(ordersFile,a);res.json(o)});
+
+app.use(express.static(path.join(__dirname,"public")));
+app.listen(PORT,()=>console.log(`Mahaprabhu Stores running on port ${PORT}`));
