@@ -1,224 +1,794 @@
-   let products=[],cart=JSON.parse(localStorage.ms_cart||"[]");
+ let products = [];
+let cart = JSON.parse(localStorage.ms_cart || "[]");
+
+let selectedProduct = null;
+let selectedVariant = null;
+let selectedQty = 1;
+
+
+/* =========================
+   API
+========================= */
+
+async function api(url, options){
+
+  const response = await fetch(url, options);
+
+  return response.json();
+}
+
+
+/* =========================
+   LOAD PRODUCTS
+========================= */
 
 async function load(){
-  products=await (await fetch("/api/products")).json();
+
+  products = await api("/api/products");
+
   render();
+
   save();
 }
+
+
+/* =========================
+   PRODUCT LIST
+========================= */
 
 function render(){
 
-  let q=(document.getElementById("q").value||"").toLowerCase();
+  let q =
+    (document.getElementById("q").value || "")
+      .toLowerCase();
 
-  document.getElementById("products").innerHTML=
+
+  document.getElementById("products").innerHTML =
+
     products
-    .filter(p=>p.name.toLowerCase().includes(q))
-    .map(p=>{
 
-      let item=cart.find(x=>x.id===p.id);
-      let qty=item?item.qty:0;
+      .filter(p =>
+        p.name.toLowerCase().includes(q)
+      )
 
-      return `
-      <article>
+      .map(p => {
 
-        <div class="pic">
-          ${p.image
-            ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;border-radius:12px">`
-            : "🛍️"
-          }
-        </div>
+        return `
 
-        <small>${p.cat} · ${p.unit}</small>
+          <article
+            onclick="productOpen(${p.id})"
+            style="cursor:pointer"
+          >
 
-        <h3>${p.name}</h3>
+            <div class="pic">
 
-        <span class="old">
-          ${p.mrp>p.price?"₹"+p.mrp:""}
-        </span>
+              ${
+                p.image
 
-        <b>₹${p.price}</b>
+                ? `
+                  <img
+                    src="${p.image}"
+                    alt="${p.name}"
+                  >
+                `
 
-        <div>
-          ${p.stock?`Stock: ${p.stock}`:"Out of Stock"}
-        </div>
-
-        ${
-          p.stock
-          ? `
-            <div class="qty-control">
-
-              <button onclick="changeQty(${p.id},-1)">
-                −
-              </button>
-
-              <strong>${qty}</strong>
-
-              <button onclick="changeQty(${p.id},1)">
-                +
-              </button>
+                : "🛍️"
+              }
 
             </div>
-          `
-          : `
-            <button disabled>
-              Out of Stock
-            </button>
-          `
-        }
 
-      </article>
-      `;
-    }).join("");
+
+            <small>
+              ${p.cat} · ${p.unit}
+            </small>
+
+
+            <h3>
+              ${p.name}
+            </h3>
+
+
+            <span class="old">
+
+              ${
+                p.mrp > p.price
+                ? "₹" + p.mrp
+                : ""
+              }
+
+            </span>
+
+
+            <b>
+              ₹${p.price}
+            </b>
+
+
+            <div>
+
+              ${
+                p.stock
+                ? `Stock: ${p.stock}`
+                : "Out of Stock"
+              }
+
+            </div>
+
+
+            <button
+              onclick="event.stopPropagation();productOpen(${p.id})"
+              ${!p.stock ? "disabled" : ""}
+            >
+
+              ${
+                p.stock
+                ? "View Product"
+                : "Out of Stock"
+              }
+
+            </button>
+
+          </article>
+
+        `;
+
+      })
+
+      .join("");
 }
 
-function changeQty(id,change){
 
-  let p=products.find(x=>x.id===id);
+/* =========================
+   PRODUCT DETAILS OPEN
+========================= */
 
-  if(!p || !p.stock)return;
+function productOpen(id){
 
-  let item=cart.find(x=>x.id===id);
+  selectedProduct =
+    products.find(p => p.id === id);
 
-  if(!item){
 
-    if(change>0){
-      cart.push({
-        id:id,
-        qty:1
-      });
-    }
+  if(!selectedProduct)
+    return;
+
+
+  selectedQty = 1;
+
+
+  /*
+    Admin থেকে options এসেছে কিনা
+  */
+
+  const options =
+    selectedProduct.options || {};
+
+
+  const variants =
+    options.variants ||
+    options.weights ||
+    [];
+
+
+  /*
+    প্রথম variant automatically select
+  */
+
+  if(variants.length){
+
+    selectedVariant = variants[0];
 
   }else{
 
-    item.qty+=change;
+    selectedVariant = null;
 
-    if(item.qty<=0){
-      cart=cart.filter(x=>x.id!==id);
-    }
-
-    if(item.qty>p.stock){
-      item.qty=p.stock;
-      alert("এই product-এর এত stock নেই।");
-    }
   }
 
-  save();
-  render();
+
+  renderProductDetails();
+
+
+  document.getElementById("productModal")
+    .style.display = "flex";
 }
 
-function add(id){
-  changeQty(id,1);
+
+/* =========================
+   PRODUCT DETAILS UI
+========================= */
+
+function renderProductDetails(){
+
+  const p = selectedProduct;
+
+
+  const options =
+    p.options || {};
+
+
+  const variants =
+    options.variants ||
+    options.weights ||
+    [];
+
+
+  let price =
+    selectedVariant
+      ? Number(selectedVariant.price)
+      : Number(p.price);
+
+
+  document.getElementById(
+    "productDetailsContent"
+  ).innerHTML = `
+
+    ${
+      p.image
+
+      ? `
+        <div class="detailsImage">
+
+          <img
+            src="${p.image}"
+            alt="${p.name}"
+          >
+
+        </div>
+      `
+
+      : `
+        <div class="detailsImage">
+          🛍️
+        </div>
+      `
+    }
+
+
+    <small>
+      ${p.cat}
+    </small>
+
+
+    <h2>
+      ${p.name}
+    </h2>
+
+
+    ${
+      p.mrp > price
+
+      ? `
+        <span class="old">
+          ₹${p.mrp}
+        </span>
+      `
+
+      : ""
+    }
+
+
+    <h2 class="detailsPrice">
+      ₹${price}
+    </h2>
+
+
+    ${
+      variants.length
+
+      ? `
+
+        <h3>
+          Select Option
+        </h3>
+
+
+        <div class="variantList">
+
+          ${
+            variants.map((v,i)=>`
+
+              <button
+                class="
+                  variantButton
+                  ${selectedVariant === v ? "selected" : ""}
+                "
+                onclick="selectVariant(${i})"
+              >
+
+                ${v.weight || v.name}
+
+                <span>
+                  ₹${v.price}
+                </span>
+
+              </button>
+
+            `).join("")
+          }
+
+        </div>
+
+      `
+
+      : ""
+    }
+
+
+    <div class="detailsStock">
+
+      ${
+        p.stock
+        ? `📦 ${p.stock} available`
+        : "❌ Out of Stock"
+      }
+
+    </div>
+
+
+    ${
+      p.stock
+
+      ? `
+
+        <div class="detailsQty">
+
+          <button onclick="changeDetailQty(-1)">
+            −
+          </button>
+
+
+          <strong>
+            ${selectedQty}
+          </strong>
+
+
+          <button onclick="changeDetailQty(1)">
+            +
+          </button>
+
+        </div>
+
+
+        <button
+          class="detailsAdd"
+          onclick="addSelectedToCart()"
+        >
+
+          🛒 Add to Cart
+
+        </button>
+
+      `
+
+      : `
+
+        <button disabled>
+          Out of Stock
+        </button>
+
+      `
+    }
+
+  `;
 }
+
+
+/* =========================
+   SELECT VARIANT
+========================= */
+
+function selectVariant(index){
+
+  const options =
+    selectedProduct.options || {};
+
+
+  const variants =
+    options.variants ||
+    options.weights ||
+    [];
+
+
+  selectedVariant =
+    variants[index];
+
+
+  renderProductDetails();
+}
+
+
+/* =========================
+   DETAIL QUANTITY
+========================= */
+
+function changeDetailQty(change){
+
+  if(!selectedProduct)
+    return;
+
+
+  selectedQty += change;
+
+
+  if(selectedQty < 1)
+    selectedQty = 1;
+
+
+  if(selectedQty > selectedProduct.stock){
+
+    selectedQty =
+      selectedProduct.stock;
+
+    alert(
+      "এই product-এর এত stock নেই।"
+    );
+
+  }
+
+
+  renderProductDetails();
+}
+
+
+/* =========================
+   ADD SELECTED PRODUCT
+========================= */
+
+function addSelectedToCart(){
+
+  if(!selectedProduct)
+    return;
+
+
+  const variantKey =
+    selectedVariant
+      ? (
+          selectedVariant.weight ||
+          selectedVariant.name
+        )
+      : "default";
+
+
+  let item =
+    cart.find(x =>
+      x.id === selectedProduct.id &&
+      x.variant === variantKey
+    );
+
+
+  if(item){
+
+    item.qty += selectedQty;
+
+  }else{
+
+    cart.push({
+
+      id: selectedProduct.id,
+
+      qty: selectedQty,
+
+      variant: variantKey,
+
+      price:
+        selectedVariant
+          ? Number(selectedVariant.price)
+          : Number(selectedProduct.price)
+
+    });
+
+  }
+
+
+  save();
+
+  productClose();
+
+  alert("🛒 Cart-এ যোগ হয়েছে");
+
+}
+
+
+/* =========================
+   PRODUCT CLOSE
+========================= */
+
+function productClose(){
+
+  document.getElementById(
+    "productModal"
+  ).style.display = "none";
+
+}
+
+
+/* =========================
+   SAVE CART
+========================= */
 
 function save(){
 
-  localStorage.ms_cart=JSON.stringify(cart);
+  localStorage.ms_cart =
+    JSON.stringify(cart);
 
-  document.getElementById("count").textContent=
-    cart.reduce((a,x)=>a+x.qty,0);
+
+  document.getElementById(
+    "count"
+  ).textContent =
+    cart.reduce(
+      (a,x)=>a+x.qty,
+      0
+    );
+
 }
+
+
+/* =========================
+   CART
+========================= */
 
 function cartOpen(){
 
-  document.getElementById("modal").style.display="flex";
+  document.getElementById(
+    "modal"
+  ).style.display = "flex";
 
-  let sum=0;
 
-  document.getElementById("cart").innerHTML=
+  let sum = 0;
 
-    cart.map(x=>{
 
-      let p=products.find(a=>a.id===x.id);
+  document.getElementById(
+    "cart"
+  ).innerHTML =
 
-      if(!p)return "";
+    cart.map((x,index)=>{
 
-      let t=p.price*x.qty;
+      const p =
+        products.find(
+          a => a.id === x.id
+        );
 
-      sum+=t;
+
+      if(!p)
+        return "";
+
+
+      const price =
+        Number(
+          x.price ?? p.price
+        );
+
+
+      const total =
+        price * x.qty;
+
+
+      sum += total;
+
 
       return `
-        <p>
-          ${p.name} × ${x.qty} = ₹${t}
 
-          <button onclick="removeItem(${x.id})">
-            −
-          </button>
-        </p>
+        <div class="cartItem">
+
+          <div>
+
+            <b>
+              ${p.name}
+            </b>
+
+
+            ${
+              x.variant !== "default"
+
+              ? `
+                <small>
+                  ${x.variant}
+                </small>
+              `
+
+              : ""
+            }
+
+
+            <div>
+              ₹${price} × ${x.qty}
+            </div>
+
+          </div>
+
+
+          <div>
+
+            <b>
+              ₹${total}
+            </b>
+
+
+            <button
+              onclick="removeItem(${index})"
+            >
+              −
+            </button>
+
+          </div>
+
+        </div>
+
       `;
 
-    }).join("") || "<p>Cart খালি</p>";
+    }).join("")
 
-  let d=sum>=500?0:30;
+    || "<p>Cart খালি</p>";
 
-  document.getElementById("total").innerHTML=
-    `<p>Subtotal ₹${sum}</p>
-     <p>Delivery ${d?"₹"+d:"FREE"}</p>
-     <h3>Total ₹${sum+d}</h3>`;
+
+  let delivery =
+    sum >= 500 ? 0 : 30;
+
+
+  document.getElementById(
+    "total"
+  ).innerHTML = `
+
+    <p>
+      Subtotal ₹${sum}
+    </p>
+
+    <p>
+      Delivery ${
+        delivery
+          ? "₹" + delivery
+          : "FREE"
+      }
+    </p>
+
+    <h3>
+      Total ₹${sum + delivery}
+    </h3>
+
+  `;
+
 }
 
-function removeItem(id){
 
-  let x=cart.find(a=>a.id===id);
+/* =========================
+   REMOVE CART ITEM
+========================= */
 
-  if(!x)return;
+function removeItem(index){
 
-  x.qty--;
+  if(!cart[index])
+    return;
 
-  if(x.qty<=0){
-    cart=cart.filter(a=>a.id!==id);
+
+  cart[index].qty--;
+
+
+  if(cart[index].qty <= 0){
+
+    cart.splice(index,1);
+
   }
 
+
   save();
+
   render();
+
   cartOpen();
+
 }
 
+
+/* =========================
+   CART CLOSE
+========================= */
+
 function cartClose(){
-  document.getElementById("modal").style.display="none";
+
+  document.getElementById(
+    "modal"
+  ).style.display = "none";
+
 }
+
+
+/* =========================
+   CHECKOUT
+========================= */
 
 async function checkout(){
 
   if(!cart.length)
     return alert("Cart খালি");
 
-  let name=prompt("Customer Name?");
-  let mobile=prompt("Mobile Number?");
-  let address=prompt("Delivery Address?");
 
-  if(!name||!mobile||!address)return;
+  let name =
+    prompt("Customer Name?");
 
-  let total=
+
+  let mobile =
+    prompt("Mobile Number?");
+
+
+  let address =
+    prompt("Delivery Address?");
+
+
+  if(!name || !mobile || !address)
+    return;
+
+
+  let subtotal =
     cart.reduce(
-      (s,x)=>
-        s+products.find(p=>p.id===x.id).price*x.qty,
+      (sum,x)=>{
+
+        return sum +
+          Number(x.price) *
+          x.qty;
+
+      },
       0
     );
 
-  let o=await(
-    await fetch("/api/orders",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json"
-      },
-      body:JSON.stringify({
-        name,
-        mobile,
-        address,
-        total:total+(total>=500?0:30),
-        items:cart
-      })
-    })
-  ).json();
 
-  alert("Order #"+o.no+" placed");
+  let delivery =
+    subtotal >= 500
+      ? 0
+      : 30;
 
-  cart=[];
+
+  let o =
+    await api(
+      "/api/orders",
+      {
+
+        method:"POST",
+
+        headers:{
+          "Content-Type":
+            "application/json"
+        },
+
+        body:JSON.stringify({
+
+          name,
+
+          mobile,
+
+          address,
+
+          total:
+            subtotal +
+            delivery,
+
+          items:cart
+
+        })
+
+      }
+    );
+
+
+  alert(
+    "Order #" +
+    o.no +
+    " placed"
+  );
+
+
+  cart = [];
+
 
   save();
+
   render();
+
   cartClose();
+
 }
 
-load();
 
+/* =========================
+   START
+========================= */
+
+load();
