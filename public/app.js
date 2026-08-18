@@ -1,6 +1,40 @@
 let products=[],cart=JSON.parse(localStorage.ms_cart||"[]");
 async function load(){products=await (await fetch("/api/products")).json();render();save()} 
-function render(){let q=(document.getElementById("q").value||"").toLowerCase();document.getElementById("products").innerHTML=products.filter(p=>p.name.toLowerCase().includes(q)).map(p=>`<article><div class="pic">🛍️</div><small>${p.cat} · ${p.unit}</small><h3>${p.name}</h3><span class="old">${p.mrp>p.price?"₹"+p.mrp:""}</span> <b>₹${p.price}</b><div>${p.stock?`Stock: ${p.stock}`:"Out of Stock"}</div><button ${!p.stock?"disabled":""} onclick="add(${p.id})">${p.stock?"Add to Cart":"Out of Stock"}</button></article>`).join("")}
+function render(){
+  let q=(document.getElementById("q").value||"").toLowerCase();
+
+  document.getElementById("products").innerHTML=
+    products
+    .filter(p=>p.name.toLowerCase().includes(q))
+    .map(p=>`
+      <article>
+        <div class="pic">
+          ${p.image
+            ? `<img src="${p.image}" alt="${p.name}" style="width:100%;height:100%;object-fit:contain;border-radius:12px">`
+            : "🛍️"
+          }
+        </div>
+
+        <small>${p.cat} · ${p.unit}</small>
+
+        <h3>${p.name}</h3>
+
+        <span class="old">
+          ${p.mrp>p.price?"₹"+p.mrp:""}
+        </span>
+
+        <b>₹${p.price}</b>
+
+        <div>
+          ${p.stock?`Stock: ${p.stock}`:"Out of Stock"}
+        </div>
+
+        <button ${!p.stock?"disabled":""} onclick="add(${p.id})">
+          ${p.stock?"Add to Cart":"Out of Stock"}
+        </button>
+      </article>
+    `).join("");
+}
 function add(id){let x=cart.find(a=>a.id===id);if(x)x.qty++;else cart.push({id,qty:1});save();cartOpen()}
 function save(){localStorage.ms_cart=JSON.stringify(cart);document.getElementById("count").textContent=cart.reduce((a,x)=>a+x.qty,0)}
 function cartOpen(){document.getElementById("modal").style.display="flex";let sum=0;document.getElementById("cart").innerHTML=cart.map(x=>{let p=products.find(a=>a.id===x.id),t=p.price*x.qty;sum+=t;return `<p>${p.name} × ${x.qty} = ₹${t} <button onclick="removeItem(${x.id})">−</button></p>`}).join("")||"<p>Cart খালি</p>";let d=sum>=500?0:30;document.getElementById("total").innerHTML=`<p>Subtotal ₹${sum}</p><p>Delivery ${d?"₹"+d:"FREE"}</p><h3>Total ₹${sum+d}</h3>`}
