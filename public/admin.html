@@ -1,4 +1,28 @@
-<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin | Mahaprabhu Stores</title><link rel="stylesheet" href="/style.css"></head><body><header><b>👨‍💼 Mahaprabhu Stores — Admin</b><a href="/">Customer Site</a> <form method="post" action="/admin-logout" style="display:inline"><button type="submit">Logout</button></form></header><main>
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin | Mahaprabhu Stores</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+
+<body>
+
+<header>
+  <b>👨‍💼 Mahaprabhu Stores — Admin</b>
+
+  <div>
+    <a href="/">Customer Site</a>
+
+    <form method="post" action="/admin-logout" style="display:inline">
+      <button type="submit">Logout</button>
+    </form>
+  </div>
+</header>
+
+<main>
+
 <h1>Admin Dashboard</h1>
 
 <button id="enableNotifications" onclick="enableNotifications()">
@@ -6,24 +30,118 @@
 </button>
 
 <div id="stats" class="stats"></div>
+
+
+<!-- ================= PRODUCT ADD ================= -->
+
 <section class="adminBox">
+
 <h2>➕ Add New Product</h2>
 
 <div class="imageUpload">
+
   <label for="newImage">📷 Product Image</label>
-  <input id="newImage" type="file" accept="image/*" onchange="previewImage(event)">
-  <img id="imagePreview" style="display:none;max-width:180px;max-height:180px;margin-top:10px;border-radius:12px;object-fit:contain">
+
+  <input
+    id="newImage"
+    type="file"
+    accept="image/*"
+    onchange="previewImage(event)"
+  >
+
+  <img
+    id="imagePreview"
+    style="
+      display:none;
+      max-width:180px;
+      max-height:180px;
+      margin-top:10px;
+      border-radius:12px;
+      object-fit:contain;
+    "
+  >
+
 </div>
+
 
 <div class="formgrid">
+
   <input id="newName" placeholder="Product name">
+
   <input id="newCat" placeholder="Category">
+
   <input id="newUnit" placeholder="Unit (e.g. 1 kg)">
+
   <input id="newMrp" type="number" placeholder="MRP">
+
   <input id="newPrice" type="number" placeholder="Selling price">
+
   <input id="newStock" type="number" placeholder="Stock">
+
 </div>
 
-<button onclick="addProduct()">➕ Add Product</button>
+
+<!-- ================= WEIGHT OPTIONS ================= -->
+
+<div class="optionBox">
+
+<h3>⚖️ Weight Options</h3>
+
+<p class="hint">
+যেমন: 250g, 500g, 1kg, 2kg, 5kg
+</p>
+
+<div id="weightOptions"></div>
+
+<button type="button" onclick="addWeightOption()">
+  ➕ Add Weight
+</button>
+
+</div>
+
+
+<!-- ================= COLOUR OPTIONS ================= -->
+
+<div class="optionBox">
+
+<h3>🎨 Colour Options</h3>
+
+<p class="hint">
+যদি product-এর আলাদা colour থাকে
+</p>
+
+<div id="colourOptions"></div>
+
+<button type="button" onclick="addColourOption()">
+  ➕ Add Colour
+</button>
+
+</div>
+
+
+<button onclick="addProduct()">
+  ➕ Add Product
+</button>
+
 </section>
-<h2>Products — Edit</h2><div id="products"></div><h2>Orders — Manage</h2><div id="orders"></div></main><script src="/admin.js"></script></body></html>
+
+
+<!-- ================= PRODUCTS ================= -->
+
+<h2>Products — Edit</h2>
+
+<div id="products"></div>
+
+
+<!-- ================= ORDERS ================= -->
+
+<h2>Orders — Manage</h2>
+
+<div id="orders"></div>
+
+</main>
+
+<script src="/admin.js"></script>
+
+</body>
+</html>
