@@ -41,3 +41,49 @@ nav a{margin-left:12px}.adminBox{background:white;padding:20px;border-radius:15p
     transform: translateY(0);
   }
 }
+/* ===== Beautiful Header ===== */
+header {
+  padding: 18px 25px;
+  background: linear-gradient(135deg, #ff7a18, #ffb347);
+  color: white;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+header b {
+  font-size: 22px;
+  letter-spacing: 0.5px;
+}
+
+header a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+/* ===== Beautiful Store Intro ===== */
+.hero {
+  margin: 20px;
+  padding: 35px 25px;
+  text-align: center;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.hero p {
+  color: #e65100;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.hero h1 {
+  font-size: 32px;
+  margin: 8px 0 20px;
+  color: #bf360c;
+}
+
+.hero div {
+  margin: 8px 0;
+  color: #5d4037;
+  font-size: 15px;
+}
